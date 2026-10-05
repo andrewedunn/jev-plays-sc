@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "targetPopulation": 5000,
+  "reserve": 5000,
+  "maxDecisions": 100,
+  "maxMonths": 120,
+  "maxMinutes": 7,
+  "maxInferenceUsd": 0.25,
+  "pricePerMillion": 0.042,
+  "perTool": 10,
+  "mode": "live",
+  "model": "jev-1.13.0",
+  "policyVersion": "0.3.0",
+  "sourceSha256": "b277727e7284091ada8a8ebefa2cbd632fa88d80fb6c6893ad57d9807531e7f2",
+  "rules": {
+    "autoInfrastructure": false,
+    "linesAndRectangles": false,
+    "batching": false,
+    "connectedStreetCandidates": true,
+    "servicedZoningOnly": true,
+    "redundantWireSuppression": true
+  },
+  "pricing": {
+    "usdPerMillionInput": 0.042,
+    "source": "https://docs.typesafe.ai/models",
+    "checkedOn": "2026-10-04",
+    "billing": "Estimate from returned usage; unknown attempts excluded and counted."
+  },
+  "startedAt": "2026-10-05T00:48:50.744Z",
+  "city": {
+    "id": "city_1b030f618b07f05a",
+    "name": "Rezoned Anthill",
+    "slug": "rezoned-anthill-1b030f",
+    "url": "https://hallucinatingsplines.com/cities/rezoned-anthill-1b030f"
+  }
+}

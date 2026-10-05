@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "targetPopulation": 5000,
+  "reserve": 5000,
+  "maxDecisions": 60,
+  "maxMonths": 120,
+  "maxMinutes": 5,
+  "maxInferenceUsd": 0.25,
+  "pricePerMillion": 0.042,
+  "perTool": 10,
+  "mode": "live",
+  "model": "jev-1.13.0",
+  "policyVersion": "0.3.0",
+  "sourceSha256": "dd684dbee5b45081df6e0bef670c8a50051cd13b3314f2bc55314fd2b4ba6ba3",
+  "rules": {
+    "autoInfrastructure": false,
+    "linesAndRectangles": false,
+    "batching": false,
+    "connectedStreetCandidates": true,
+    "servicedZoningOnly": true,
+    "redundantWireSuppression": true
+  },
+  "pricing": {
+    "usdPerMillionInput": 0.042,
+    "source": "https://docs.typesafe.ai/models",
+    "checkedOn": "2026-10-04",
+    "billing": "Estimate from returned usage; unknown attempts excluded and counted."
+  },
+  "startedAt": "2026-10-05T00:57:45.615Z",
+  "city": {
+    "id": "city_0d59a51054574e82",
+    "name": "Orbital Yards",
+    "slug": "orbital-yards-0d59a5",
+    "url": "https://hallucinatingsplines.com/cities/orbital-yards-0d59a5"
+  }
+}

@@ -1,0 +1,1 @@
+{"sequence":1,"timestamp":"2026-10-05T00:59:58.341Z","elapsedMs":248.33287499999997,"kind":"jev_preflight","response":{"model":"jev-1.13.0","answers":{"connected":{"type":"noul","noul":0.92}},"usage":{"input_tokens":279,"output_tokens":20}},"latencyMs":247.112375}

@@ -1,0 +1,134 @@
+{
+  "status": "interrupted",
+  "decisions": 12,
+  "mutations": 12,
+  "placements": 11,
+  "failures": 0,
+  "gameFundsSpent": 3280,
+  "monthsAdvanced": 1,
+  "inputTokens": 59113,
+  "outputTokens": 1871,
+  "usageUnknownRequests": 0,
+  "estimatedInferenceUsd": 0.002482746,
+  "modelLatencyMs": [
+    247.112375,
+    164.819708,
+    167.10599999999977,
+    187.02849999999944,
+    179.9255830000002,
+    198.22062499999993,
+    178.60658300000068,
+    178.94487499999923,
+    185.63566700000047,
+    166.86441700000069,
+    177.93141699999978,
+    159.52737500000148,
+    187.67916599999808,
+    189.27179100000285,
+    144.31287499999962,
+    187.5826249999991,
+    162.9110839999994,
+    164.26545800000167,
+    232.95433400000184,
+    179.6481249999997,
+    165.45183299999917,
+    221.593667000001,
+    195.41300000000047,
+    171.97804199999518,
+    132.59879200000432
+  ],
+  "waitMs": 4774.405665999997,
+  "milestones": [],
+  "development": {
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "source": "Unavailable: import coding-agent usage separately; not included in inference cost."
+  },
+  "modelRequests": 25,
+  "cityQuality": {
+    "zoneCounts": {
+      "residential": 1,
+      "commercial": 0,
+      "industrial": 1
+    },
+    "connectedRoadTiles": 8,
+    "roadComponents": 1,
+    "totalRoadTiles": 8,
+    "wireTiles": 0,
+    "zonesOnMainRoad": 2,
+    "totalZones": 2,
+    "zonesMissingMainRoad": 0,
+    "zonesMissingGeometricPower": 0,
+    "geometricRoadCoverage": 1,
+    "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+  },
+  "finalStats": {
+    "population": 0,
+    "score": 701,
+    "funds": 16720,
+    "cityTime": 4,
+    "year": 1900,
+    "month": 1,
+    "classification": "Village",
+    "isPowered": true,
+    "demand": {
+      "residential": 360,
+      "commercial": -1200,
+      "industrial": 1200
+    },
+    "census": {
+      "resPop": 0,
+      "comPop": 0,
+      "indPop": 0,
+      "roadTotal": 8,
+      "railTotal": 0,
+      "poweredZoneCount": 2,
+      "unpoweredZoneCount": 0,
+      "policeStationPop": 0,
+      "fireStationPop": 0,
+      "coalPowerPop": 1,
+      "nuclearPowerPop": 0,
+      "seaportPop": 0,
+      "airportPop": 0,
+      "stadiumPop": 0,
+      "crimeAverage": 64,
+      "pollutionAverage": 65,
+      "landValueAverage": 63
+    },
+    "evaluation": {
+      "approval": 71,
+      "populationDelta": 0,
+      "assessedValue": 0,
+      "scoreDelta": 201,
+      "problems": [
+        "taxes"
+      ]
+    },
+    "budget": {
+      "taxRate": 7,
+      "cashFlow": 0,
+      "roadPercent": 100,
+      "firePercent": 100,
+      "policePercent": 100,
+      "roadEffect": 32,
+      "fireEffect": 1000,
+      "policeEffect": 1000,
+      "roadMaintenanceBudget": 0,
+      "fireMaintenanceBudget": 0,
+      "policeMaintenanceBudget": 0
+    }
+  },
+  "finalAnalysis": {
+    "unpowered_buildings": 1,
+    "unroaded_zones": 0,
+    "largest_empty_area": {
+      "x": 0,
+      "y": 0,
+      "approx_size": "very_large"
+    }
+  },
+  "elapsedMs": 38225.997,
+  "survivalMonths": null,
+  "finishedAt": "2026-10-05T01:00:36.318Z"
+}

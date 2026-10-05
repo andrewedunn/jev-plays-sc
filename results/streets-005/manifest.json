@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "targetPopulation": 5000,
+  "reserve": 5000,
+  "maxDecisions": 70,
+  "maxMonths": 120,
+  "maxMinutes": 4,
+  "maxInferenceUsd": 0.25,
+  "pricePerMillion": 0.042,
+  "perTool": 10,
+  "mode": "live",
+  "model": "jev-1.13.0",
+  "policyVersion": "0.3.0",
+  "sourceSha256": "cbd91e33b71d4e0964642d525584420acc6c9998e87929a3d6934fd335bd52d0",
+  "rules": {
+    "autoInfrastructure": false,
+    "linesAndRectangles": false,
+    "batching": false,
+    "connectedStreetCandidates": true,
+    "servicedZoningOnly": true,
+    "redundantWireSuppression": true
+  },
+  "pricing": {
+    "usdPerMillionInput": 0.042,
+    "source": "https://docs.typesafe.ai/models",
+    "checkedOn": "2026-10-04",
+    "billing": "Estimate from returned usage; unknown attempts excluded and counted."
+  },
+  "startedAt": "2026-10-05T01:01:04.805Z",
+  "city": {
+    "id": "city_9dfb18bdd767d126",
+    "name": "Coral Precinct",
+    "slug": "coral-precinct-9dfb18",
+    "url": "https://hallucinatingsplines.com/cities/coral-precinct-9dfb18"
+  }
+}

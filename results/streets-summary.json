@@ -1,0 +1,175 @@
+{
+  "note": "Sequential development experiments with policy changes and manual interruptions; not independent frozen-policy benchmarks.",
+  "segments": [
+    {
+      "run": "streets-001",
+      "city": "Rezoned Anthill",
+      "status": "interrupted",
+      "decisions": 20,
+      "placements": 19,
+      "elapsedSeconds": 61.088702792,
+      "inferenceUsd": 0.004451160000000001,
+      "population": 0,
+      "peakPopulation": 0,
+      "quality": {
+        "zoneCounts": {
+          "residential": 0,
+          "commercial": 0,
+          "industrial": 0
+        },
+        "connectedRoadTiles": 18,
+        "roadComponents": 1,
+        "totalRoadTiles": 18,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 0,
+        "totalZones": 0,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 0,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    },
+    {
+      "run": "streets-002",
+      "city": "Orbital Yards",
+      "status": "interrupted",
+      "decisions": 34,
+      "placements": 16,
+      "elapsedSeconds": 174.295969167,
+      "inferenceUsd": 0.007148022,
+      "population": 160,
+      "peakPopulation": 160,
+      "quality": {
+        "zoneCounts": {
+          "residential": 2,
+          "commercial": 0,
+          "industrial": 3
+        },
+        "connectedRoadTiles": 10,
+        "roadComponents": 1,
+        "totalRoadTiles": 10,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 5,
+        "totalZones": 5,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 1,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    },
+    {
+      "run": "streets-003",
+      "city": "Orbital Yards",
+      "status": "interrupted",
+      "decisions": 14,
+      "placements": 1,
+      "elapsedSeconds": 91.878455041,
+      "inferenceUsd": 0.002744322,
+      "population": 560,
+      "peakPopulation": 560,
+      "quality": {
+        "zoneCounts": {
+          "residential": 2,
+          "commercial": 0,
+          "industrial": 3
+        },
+        "connectedRoadTiles": 10,
+        "roadComponents": 1,
+        "totalRoadTiles": 10,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 5,
+        "totalZones": 5,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 1,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    },
+    {
+      "run": "streets-004",
+      "city": "Coral Precinct",
+      "status": "interrupted",
+      "decisions": 12,
+      "placements": 11,
+      "elapsedSeconds": 38.225997,
+      "inferenceUsd": 0.002482746,
+      "population": 0,
+      "peakPopulation": 0,
+      "quality": {
+        "zoneCounts": {
+          "residential": 1,
+          "commercial": 0,
+          "industrial": 1
+        },
+        "connectedRoadTiles": 8,
+        "roadComponents": 1,
+        "totalRoadTiles": 8,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 2,
+        "totalZones": 2,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 1,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    },
+    {
+      "run": "streets-005",
+      "city": "Coral Precinct",
+      "status": "model_stopped",
+      "decisions": 1,
+      "placements": 0,
+      "elapsedSeconds": 4.1063765000000005,
+      "inferenceUsd": 0.00014931000000000002,
+      "population": 0,
+      "peakPopulation": 0,
+      "quality": {
+        "zoneCounts": {
+          "residential": 1,
+          "commercial": 0,
+          "industrial": 1
+        },
+        "connectedRoadTiles": 8,
+        "roadComponents": 1,
+        "totalRoadTiles": 8,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 2,
+        "totalZones": 2,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 1,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    },
+    {
+      "run": "streets-006",
+      "city": "Coral Precinct",
+      "status": "limit_reached",
+      "decisions": 49,
+      "placements": 21,
+      "elapsedSeconds": 242.00046766600002,
+      "inferenceUsd": 0.011067378000000001,
+      "population": 1220,
+      "peakPopulation": 1220,
+      "quality": {
+        "zoneCounts": {
+          "residential": 3,
+          "commercial": 1,
+          "industrial": 6
+        },
+        "connectedRoadTiles": 21,
+        "roadComponents": 1,
+        "totalRoadTiles": 21,
+        "wireTiles": 0,
+        "zonesOnMainRoad": 10,
+        "totalZones": 10,
+        "zonesMissingMainRoad": 0,
+        "zonesMissingGeometricPower": 0,
+        "geometricRoadCoverage": 1,
+        "note": "Geometry checks street adjacency and component membership; simulation employment and growth are separate outcomes."
+      }
+    }
+  ],
+  "totalRunElapsedSeconds": 611.595968166,
+  "totalInferenceUsd": 0.028042938000000003
+}

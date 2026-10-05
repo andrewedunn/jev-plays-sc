@@ -26,6 +26,25 @@ Each results folder contains the complete candidate menus and model responses, a
 
 Development token accounting is a snapshot in the latest metrics, obtained from local Codex token_count deltas since “Let's roll.” It includes repeated/cached context and excludes later work after its timestamp. It is a single project-development snapshot, not a per-segment charge, so do not add it across segments. Development dollar cost cannot be derived from those counters and remains null. The private session transcript is not published.
 
-## Next experiment
+## Road-policy correction after user review
 
-Freeze the policy, improve transport and job-balance evidence, then test fixed seeds from empty cities. Compare against a disclosed scripted baseline before claiming speed or quality gains. Safe independent-placement batching remains unimplemented.
+The user rejected the first city as poor. That assessment is justified: the original placements were 66 wire tiles, 11 roads, 18 residential zones, one industrial zone, and one coal plant. Population and placement totals overstated the practical outcome.
+
+Six additional segments tested connected streets, serviced zoning, demand facts, wire suppression, expansion access, and a minimum mix of zone types. Earlier policies stalled or enclosed the street; they are included rather than discarded. Policies changed between segments. The final segment's source hash matches controller commit `6c0264f`; earlier intermediate policies were not frozen as separate commits and have limited reproducibility. No existing buildings were demolished.
+
+| Segment | City | Turns | Placements | Seconds | Estimated Jev USD | Final population | Status |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| [streets-001](results/streets-001/metrics.json) | Rezoned Anthill | 20 | 19 | 61.1 | $0.004451 | 0 | interrupted |
+| [streets-002](results/streets-002/metrics.json) | Orbital Yards | 34 | 16 | 174.3 | $0.007148 | 160 | interrupted |
+| [streets-003](results/streets-003/metrics.json) | Orbital Yards | 14 | 1 | 91.9 | $0.002744 | 560 | interrupted |
+| [streets-004](results/streets-004/metrics.json) | Coral Precinct | 12 | 11 | 38.2 | $0.002483 | 0 | interrupted |
+| [streets-005](results/streets-005/metrics.json) | Coral Precinct | 1 | 0 | 4.1 | $0.000149 | 0 | model_stopped |
+| [streets-006](results/streets-006/metrics.json) | Coral Precinct | 49 | 21 | 242.0 | $0.011067 | 1220 | limit_reached |
+
+The final Coral Precinct state has **1,220 population, 21 connected road tiles, 10/10 zones on the main street, and zero wire tiles**. Counts: {'residential': 3, 'commercial': 1, 'industrial': 6}. Geometry predicts power connectivity for every zone. Native census shows developed residential and industrial activity; commercial activity remains zero. An empty shop zone is not evidence of a successful commercial district. The engine population indicator combines residential and employment activity: `(resPop + 8 * (comPop + indPop)) * 20`. The final census is 5 residential, 0 commercial, and 7 industrial units, so 1,220 comprises a 100-point residential contribution and a 1,120-point industrial contribution. It must not be described as 1,220 housed residents. The native map still shows mostly empty zones and two developed factories.
+
+The final continuation took 242.0 seconds and $0.011067 estimated Jev inference. Coral Precinct's full construction also includes streets-004 and streets-005; the final continuation's time alone is not a from-scratch city-build time. All six correction segments cost $0.028043 and took 10.19 minutes of measured run time, excluding coding and gaps. streets-001 was manually reconciled after interruption; its elapsed time ends at the last saved observation.
+
+This improves transport and removes the wire-spam failure, but it **does not meet the 5,000-person challenge or establish an awesome city**. The script now contributes substantial strategy: it constrains street growth, zoning access, minimum shops, and repeated waiting. Jev selects every executed placement, but this is a combined scripted policy and Jev experiment, not an unaided planning benchmark.
+
+Reports open on their final frame, show street coverage and native census activity, and use the site's tile sprites with an offline color fallback. The latest development-token snapshot includes this correction work as of its timestamp; its subscription dollar cost remains unavailable. The local traffic regression and in-memory repair demonstration are documented in [diagnostics](diagnostics/README.md); their applicability to the deployed API remains unverified.
