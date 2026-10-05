@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+runs/*
+!runs/.gitkeep
+node_modules/
+.DS_Store
