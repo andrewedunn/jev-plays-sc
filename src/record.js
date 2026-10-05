@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync, appendFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { quality } from './topology.js';
 
 export class Recorder {
   constructor(dir, manifest) {
@@ -18,6 +19,8 @@ export class Recorder {
     return event;
   }
   snapshot(observation, decisionId = null) {
+    observation.quality = quality(observation);
+    this.metrics.cityQuality = observation.quality;
     const event = this.event('observations', { observation, decisionId, estimatedInferenceUsd: this.metrics.estimatedInferenceUsd, inputTokens: this.metrics.inputTokens });
     this.write(`snapshots/${String(event.sequence).padStart(6, '0')}.json`, observation.map);
     this.metrics.finalStats = observation.stats;

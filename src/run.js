@@ -6,6 +6,7 @@ import { candidates, decisionPayload, categoryPayload, validPlacement, TOOLS } f
 import { HttpError } from './http.js';
 import { Recorder } from './record.js';
 import { report } from './report.js';
+import { quality } from './topology.js';
 
 export const defaults = { seed: 42, targetPopulation: 5000, reserve: 5000, maxDecisions: 300, maxMonths: 120, maxMinutes: 20, maxInferenceUsd: 1, pricePerMillion: 0.042, perTool: 10 };
 
@@ -18,8 +19,8 @@ export function validateAnswer(response, menu) {
 export async function run({ game, jev, dir, cityId, config = {}, signal, wait = sleep, minActionMs = 2050, minAdvanceMs = 6100, mode = 'live' }) {
   const settings = { ...defaults, ...config };
   const sourceHash = createHash('sha256');
-  for (const file of ['run.js', 'candidates.js', 'http.js']) sourceHash.update(readFileSync(new URL(file, import.meta.url)));
-  const recorder = new Recorder(dir, { ...settings, mode, model: jev.model, policyVersion: '0.2.0', sourceSha256: sourceHash.digest('hex'), rules: { autoInfrastructure: false, linesAndRectangles: false, batching: false }, pricing: { usdPerMillionInput: settings.pricePerMillion, source: 'https://docs.typesafe.ai/models', checkedOn: '2026-10-04', billing: 'Estimate from returned usage; unknown attempts excluded and counted.' } });
+  for (const file of ['run.js', 'candidates.js', 'topology.js', 'http.js']) sourceHash.update(readFileSync(new URL(file, import.meta.url)));
+  const recorder = new Recorder(dir, { ...settings, mode, model: jev.model, policyVersion: '0.3.0', sourceSha256: sourceHash.digest('hex'), rules: { autoInfrastructure: false, linesAndRectangles: false, batching: false, connectedStreetCandidates: true, servicedZoningOnly: true, redundantWireSuppression: true }, pricing: { usdPerMillionInput: settings.pricePerMillion, source: 'https://docs.typesafe.ai/models', checkedOn: '2026-10-04', billing: 'Estimate from returned usage; unknown attempts excluded and counted.' } });
   const metrics = recorder.metrics;
   let city, observed, recent = [], survivalMonths = null, lastAction = -Infinity, lastAdvance = -Infinity, mutationsSinceAdvance = 0;
   const blocked = new Set();
@@ -169,6 +170,7 @@ function account(response, metrics, settings) {
   metrics.estimatedInferenceUsd = metrics.inputTokens / 1e6 * settings.pricePerMillion;
   metrics.modelLatencyMs.push(response.latencyMs);
 }
-export function qualifies({ stats, summary }, { targetPopulation, reserve }) {
-  return stats.population >= targetPopulation && stats.funds >= reserve && summary.analysis?.unpowered_buildings === 0 && summary.analysis?.unroaded_zones === 0;
+export function qualifies(observation, { targetPopulation, reserve }) {
+  const {stats,summary}=observation, q=quality(observation);
+  return q.connectedRoadTiles>=8 && Object.values(q.zoneCounts).every(n=>n>0) && q.zonesMissingMainRoad===0 && q.zonesMissingGeometricPower===0 && stats.population >= targetPopulation && stats.funds >= reserve && summary.analysis?.unpowered_buildings === 0 && summary.analysis?.unroaded_zones === 0;
 }

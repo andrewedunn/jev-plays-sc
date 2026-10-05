@@ -10,6 +10,7 @@ import { run, qualifies, validateAnswer } from '../src/run.js';
 export function fixture() {
   return { stats: { population: 0, funds: 20000, year: 1900, month: 1, budget: { taxRate: 7 }, demand: { residential: 1000, commercial: 0, industrial: 500 } }, summary: { buildings: [], infrastructure: { road_tiles: 0 }, analysis: { unpowered_buildings: 0, unroaded_zones: 0 } }, map: { width: 16, height: 12, tiles: Array(192).fill(0) } };
 }
+function viableFixture(){const o=fixture();o.summary.buildings=[{type:'coal_power',x:3,y:5},{type:'residential',x:7,y:5},{type:'industrial',x:10,y:5},{type:'commercial',x:13,y:5}];o.map.tiles[5*16+5]=210;for(let x=5;x<=14;x++)o.map.tiles[3*16+x]=66;return o;}
 const directory = () => mkdtempSync(join(tmpdir(), 'jev-sc-test-'));
 const answer = (choice, usage = { input_tokens: 100, output_tokens: 10 }) => ({ data: { model: 'jev-1.13.0', answers: { move: { type: 'choice', choice, confidence: 0.8, probabilities: { [choice]: 1 } } }, usage }, latencyMs: 10 });
 
@@ -44,6 +45,7 @@ test('game client forces all auto flags false and forbids line helpers', async (
 });
 test('end-to-end accounting, trace linkage, failure recovery, and escaped report', async () => {
   let obs = fixture(), calls = 0, mutations = 0;
+  obs.summary.buildings = [{type:'coal_power',x:3,y:3}];
   const game = {
     call: async () => ({ id: 'city_test', name: '</script><script>alert(1)</script>', slug: 'test' }),
     observe: async () => structuredClone(obs),
@@ -63,7 +65,7 @@ test('end-to-end accounting, trace linkage, failure recovery, and escaped report
 });
 test('ambiguous mutation is reconciled and never retried', async () => {
   let mutations = 0, history = 0;
-  const game = { call: async path => { if (path.includes('actions')) { history++; return []; } return { id: 'city_test' }; }, observe: async () => fixture(), execute: async () => { mutations++; throw new Error('timeout'); } };
+  const game = { call: async path => { if (path.includes('actions')) { history++; return []; } return { id: 'city_test' }; }, observe: async () => {const o=fixture();o.summary.buildings=[{type:'coal_power',x:3,y:3}];return o;}, execute: async () => { mutations++; throw new Error('timeout'); } };
   const jev = { model: 'test', decide: async p => answer(!p.questions.move ? 'probe' : 'build_road' in p.questions.move.criteria ? 'build_road' : Object.entries(p.questions.move.criteria).find(([, m]) => m.action === 'build_road')[0]) };
   const { metrics } = await run({ game, jev, dir: directory(), config: { maxDecisions: 5 }, minActionMs: 0 });
   assert.equal(mutations, 1); assert.equal(history, 1); assert.equal(metrics.status, 'mutation_unconfirmed');
@@ -75,15 +77,16 @@ test('no city is created when Jev preflight fails', async () => {
   const { metrics } = await run({ game, jev, dir: directory() });
   assert.equal(creates, 0); assert.equal(metrics.status, 'error');
 });
+test('empty map cannot pass on reported population alone',()=>{const o=fixture();o.stats.population=5000;assert.equal(qualifies(o,{targetPopulation:5000,reserve:5000}),false);});
 test('challenge requires both measured connections and reserve', () => {
-  const obs = fixture(); obs.stats.population = 5000;
+  const obs = viableFixture(); obs.stats.population = 5000;
   assert.equal(qualifies(obs, { targetPopulation: 5000, reserve: 5000 }), true);
   obs.summary.analysis.unpowered_buildings = 1;
   assert.equal(qualifies(obs, { targetPopulation: 5000, reserve: 5000 }), false);
 });
 
 test('challenge only passes after twelve observed survival months', async () => {
-  const obs = fixture(); obs.stats.population = 5000;
+  const obs = viableFixture(); obs.stats.population = 5000;
   const game = { call: async () => ({ id: 'city_test' }), observe: async () => structuredClone(obs), execute: async () => { obs.stats.month++; return { success: true }; } };
   const jev = { model: 'test', decide: async p => answer(!p.questions.move ? 'probe' : 'advance' in p.questions.move.criteria ? 'advance' : Object.entries(p.questions.move.criteria).find(([, m]) => m.kind === 'advance')[0]) };
   const { metrics } = await run({ game, jev, dir: directory(), config: { maxMonths: 12 }, minAdvanceMs: 0 });

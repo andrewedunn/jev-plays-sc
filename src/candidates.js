@@ -1,5 +1,6 @@
+import { topology, roadSuggestions, quality, cells, perimeter, neighbors } from './topology.js';
 // Conservative, original placement validator. The game remains authoritative.
-// No engine code, pathfinding, city templates, auto-clearing, or auto-placement.
+// Original candidate routing; no engine code, city templates, auto-clearing, or auto-placement.
 export const TOOLS = {
   build_coal_power: { size: 4, cost: 3000 },
   zone_residential: { size: 3, cost: 100 },
@@ -16,7 +17,7 @@ const distance = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 export const tileId = raw => raw & 1023;
 export const roadTile = id => id >= 64 && id <= 206;
 export const wireTile = id => id >= 208 && id <= 222 || id === 77 || id === 78;
-const removable = id => id >= 21 && id <= 39 || id >= 44 && id <= 47;
+const removable = id => id >= 21 && id <= 39 || id >= 44 && id <= 47 || id >= 208 && id <= 222;
 export function validPlacement(map, action, x, y) {
   const tool = TOOLS[action];
   if (!tool || !Number.isInteger(x) || !Number.isInteger(y)) return false;
@@ -46,47 +47,65 @@ function nearest(point, list) {
   if (!list.length) return null;
   return Math.min(...list.map(other => distance(point, other)));
 }
-function sampleSpatially(list, count) {
-  if (list.length <= count) return list;
-  const chosen = [list[0]];
-  const pool = list.slice(1);
-  while (chosen.length < count && pool.length) {
-    let index = 0, best = -Infinity;
-    pool.forEach((p, i) => { const score = nearest(p, chosen); if (score > best) { best = score; index = i; } });
-    chosen.push(pool.splice(index, 1)[0]);
-  }
-  return chosen;
-}
 export function candidates(observation, { reserve = 5000, perTool = 10, monthsRemaining = 120, blocked = new Set(), survival = false } = {}) {
   const { map, stats, summary } = observation;
   if (!Number.isFinite(stats.funds) || !Number.isInteger(map.width) || !Number.isInteger(map.height) || map.tiles.length !== map.width * map.height) throw new Error('Invalid game observation');
-  const buildings = summary.buildings ?? [];
-  const roads = points(map, roadTile), wires = points(map, wireTile);
-  const power = buildings.filter(b => ['coal_power', 'nuclear_power'].includes(b.type));
-  const anchors = buildings.length ? buildings : [{ x: Math.floor(map.width / 2), y: Math.floor(map.height / 2) }];
-  const moves = [];
-  if (!survival) for (const [action, tool] of Object.entries(TOOLS)) {
-    if (stats.funds - tool.cost < reserve) continue;
-    let positions = [];
-    for (let y = 0; y < map.height; y++) for (let x = 0; x < map.width; x++) {
-      if (!validPlacement(map, action, x, y) || blocked.has(`${action}:${x}:${y}`)) continue;
-      const p = { x, y }, buildingDistance = nearest(p, anchors);
-      // Publish these search-space restrictions: focus within 12 tiles of development.
-      if (buildings.length && buildingDistance > 12) continue;
-      positions.push({ ...p, buildingDistance, roadDistance: nearest(p, roads), wireDistance: nearest(p, [...wires, ...power]), nearestIndustry: nearest(p, buildings.filter(b => b.type === 'industrial')), nearestPowerPlant: nearest(p, power) });
+  const state = topology(observation), buildings = summary.buildings ?? [], moves = [];
+  const hasPlant = buildings.some(b => ['coal_power','nuclear_power'].includes(b.type));
+  const roads = points(map, roadTile);
+  const anchor = {x:Math.floor(map.width/2),y:Math.floor(map.height/2)};
+  const affordable = action => stats.funds - TOOLS[action].cost >= reserve;
+  if (!survival) {
+    const routes = roadSuggestions(state);
+    const options = routes.length ? routes : !buildings.length ? perimeter(map,anchor).map(i=>({action:'build_road',x:i%map.width,y:Math.floor(i/map.width),purpose:'Seed a future street',routeLength:1})) : [];
+    for (const p of options.filter(p=>affordable(p.action)&&!blocked.has(`${p.action}:${p.x}:${p.y}`)).slice(0,perTool*2)) moves.push({kind:'place',...p,cost:TOOLS[p.action].cost,footprint:1});
+    for (const [action, tool] of Object.entries(TOOLS)) {
+      if (['build_road','bulldoze'].includes(action) || !affordable(action)) continue;
+      // Suppress pointless infrastructure and premature expansion, not legal moves generally.
+      if (action==='build_coal_power' && hasPlant) continue;
+      if (action==='build_power_line' && (!hasPlant || state.unpoweredZones.length===0)) continue;
+      if (action.startsWith('zone_') && (state.disconnectedZones.length || state.unpoweredZones.length)) continue;
+      const type=action.replace('zone_','');
+      if (action.startsWith('zone_') && (stats.demand?.[type]??0)<0 && buildings.some(b=>b.type===type)) continue;
+      let positions=[];
+      for(let y=0;y<map.height;y++)for(let x=0;x<map.width;x++) {
+        if(!validPlacement(map,action,x,y)||blocked.has(`${action}:${x}:${y}`))continue;
+        const p={x,y}, footprint=cells(map,p,tool.size), access=tool.size===3?perimeter(map,p):[];
+        const onStreet=access.some(i=>state.mainRoad.includes(i));
+        const powerAdjacent=footprint.some(i=>neighbors(map,i).some(n=>state.supplied.has(n)));
+        if(action.startsWith('zone_') && (!onStreet || !powerAdjacent)) continue;
+        if(action.startsWith('zone_')){
+          // Preserve at least one legal next street tile after this footprint is occupied.
+          const occupied=new Set([...state.occupied,...footprint]);
+          const exit=state.mainRoad.some(i=>neighbors(map,i).some(n=>!occupied.has(n)&&[0,210,211].includes(tileId(map.tiles[n]))));
+          if(!exit)continue;
+        }
+        if(action==='build_power_line') {
+          const i=y*map.width+x;
+          if(!neighbors(map,i).some(n=>state.supplied.has(n)))continue;
+          const targets=state.unpoweredZones.flatMap(b=>cells(map,b));
+          const before=Math.min(...targets.map(t=>Math.min(...[...state.supplied].map(s=>Math.abs(s%map.width-t%map.width)+Math.abs(Math.floor(s/map.width)-Math.floor(t/map.width))))));
+          const after=Math.min(...targets.map(t=>Math.abs(x-t%map.width)+Math.abs(y-Math.floor(t/map.width))));
+          if(after>=before)continue;
+        }
+        let openLand=0;for(let dy=-8;dy<=8;dy++)for(let dx=-8;dx<=8;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<map.width&&yy<map.height&&tileId(map.tiles[yy*map.width+xx])===0)openLand++;}
+        const distanceToRoad=nearest(p,roads);
+        positions.push({...p,buildingDistance:nearest(p,buildings.length?buildings:[anchor]),roadDistance:distanceToRoad,connectedStreetAccess:onStreet,powerConnection:powerAdjacent,openLand,
+          purpose:action.startsWith('zone_')?`Add ${type} on an existing connected street with adjacent power`:action==='build_power_line'?'Extend existing power supply towards a disconnected zone':action==='build_coal_power'?'Place first power plant with room for a settlement':'Add a neighborhood amenity',
+          rank:action==='build_coal_power'?openLand-(Math.abs(x-anchor.x)+Math.abs(y-anchor.y))*0.1:onStreet?100-(distanceToRoad??100):-(nearest(p,buildings.length?buildings:[anchor])??100)});
+      }
+      positions.sort((a,b)=>b.rank-a.rank);
+      for(const p of positions.slice(0,perTool)){const {rank,...facts}=p;moves.push({kind:'place',action,...facts,cost:tool.cost,footprint:tool.size});}
     }
-    positions.sort((a, b) => a.buildingDistance - b.buildingDistance || a.y - b.y || a.x - b.x);
-    // Keep nearby candidates plus geographically diverse alternatives.
-    const nearby = positions.slice(0, Math.ceil(perTool / 2));
-    const diverse = sampleSpatially(positions.slice(nearby.length), perTool - nearby.length);
-    for (const p of [...nearby, ...diverse]) moves.push({ kind: 'place', action, ...p, cost: tool.cost, footprint: tool.size });
+    for(const tax_rate of [5,7,9,11])if(tax_rate!==stats.budget?.taxRate)moves.push({kind:'budget',settings:{tax_rate},cost:0});
   }
-  if (!survival) for (const tax_rate of [5, 7, 9, 11]) {
-    if (tax_rate !== stats.budget?.taxRate) moves.push({ kind: 'budget', settings: { tax_rate }, cost: 0 });
+  if (hasPlant && state.mainRoad.length>=16 && state.disconnectedZones.length===0 && moves.some(m=>m.action?.startsWith('zone_'))) {
+    // Build on serviced frontage before extending an empty street indefinitely.
+    for(let i=moves.length-1;i>=0;i--)if(moves[i].action==='build_road')moves.splice(i,1);
   }
-  if (monthsRemaining >= 1) moves.push({ kind: 'advance', months: 1, cost: 0 });
-  moves.push({ kind: 'stop', cost: 0 });
-  return Object.fromEntries(moves.map((move, i) => [`m${i}`, move]));
+  if(monthsRemaining>=1)moves.push({kind:'advance',months:1,cost:0});
+  moves.push({kind:'stop',cost:0});
+  return Object.fromEntries(moves.map((move,i)=>[`m${i}`,move]));
 }
 
 export function decisionPayload(observation, menu, { targetPopulation, reserve, recent = [], survival = false, mutationsSinceAdvance = 0 }) {
@@ -94,6 +113,8 @@ export function decisionPayload(observation, menu, { targetPopulation, reserve, 
     state: {
       goal: { targetPopulation, reserve, survival },
       stats: observation.stats,
+      quality: quality(observation),
+      demandMeaning: Object.fromEntries(Object.entries(observation.stats.demand ?? {}).map(([type,value])=>[type,value>0?'MORE '+type.toUpperCase()+' NEEDED':value<0?'OVERSUPPLIED: do not add more '+type:'balanced or not yet simulated'])),
       buildings: connectivityFacts(observation),
       infrastructure: observation.summary.infrastructure,
       analysis: observation.summary.analysis,
@@ -109,38 +130,7 @@ export function decisionPayload(observation, menu, { targetPopulation, reserve, 
   };
 }
 
-// Geometry evidence only: reachability is computed, strategy and placements remain Jev choices.
-export function connectivityFacts({ map, summary }) {
-  const buildings = summary.buildings ?? [], conductive = new Set(), seeds = [];
-  map.tiles.forEach((t, i) => { if (wireTile(tileId(t))) conductive.add(i); });
-  const footprint = building => {
-    const size = ['coal_power', 'nuclear_power', 'seaport', 'stadium'].includes(building.type) ? 4 : building.type === 'airport' ? 6 : 3;
-    const cells = [];
-    for (let dy = -1; dy < size - 1; dy++) for (let dx = -1; dx < size - 1; dx++) {
-      const x = building.x + dx, y = building.y + dy;
-      if (x >= 0 && x < map.width && y >= 0 && y < map.height) cells.push(y * map.width + x);
-    }
-    return cells;
-  };
-  for (const b of buildings) for (const i of footprint(b)) {
-    conductive.add(i);
-    if (['coal_power', 'nuclear_power'].includes(b.type)) seeds.push(i);
-  }
-  const reached = new Set(seeds), stack = [...seeds];
-  while (stack.length) {
-    const i = stack.pop(), x = i % map.width, y = Math.floor(i / map.width);
-    const adjacent = [x > 0 ? i - 1 : -1, x + 1 < map.width ? i + 1 : -1, y > 0 ? i - map.width : -1, y + 1 < map.height ? i + map.width : -1];
-    for (const next of adjacent) if (conductive.has(next) && !reached.has(next)) { reached.add(next); stack.push(next); }
-  }
-  return buildings.map(b => {
-    let roadNearby = false;
-    for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
-      const x = b.x + dx, y = b.y + dy;
-      if (x >= 0 && x < map.width && y >= 0 && y < map.height && roadTile(tileId(map.tiles[y * map.width + x]))) roadNearby = true;
-    }
-    return { ...b, geometricPowerConnection: footprint(b).some(i => reached.has(i)), roadNearby, evidenceNote: 'Geometry prediction; simulation powered flag and API road summary remain authoritative.' };
-  });
-}
+export function connectivityFacts(observation) { return topology(observation).buildings; }
 
 export function categoryPayload(observation, menu, config) {
   const payload = decisionPayload(observation, menu, config);
@@ -154,13 +144,21 @@ export function categoryPayload(observation, menu, config) {
     build_park: 'Improve neighborhood appeal with one park tile.',
     build_fire_station: 'Provide fire protection when affordable and needed.',
     build_police_station: 'Provide police protection when affordable and needed.',
-    bulldoze: 'Clear exactly one tree or rubble tile to make construction possible.',
+    bulldoze: 'Clear exactly one tree, rubble, or redundant wire tile to make construction possible.',
     budget: 'Adjust the tax rate to balance growth and cash flow.',
     advance: 'Simulate one month. Power and population update during simulation; waiting cannot grow a city with no zones.',
     stop: 'End the session if further play is unproductive.',
   };
-  const keys = [...new Set(Object.values(menu).map(m => m.action ?? m.kind))];
-  payload.questions.move.criteria = Object.fromEntries(keys.map(key => [key, descriptions[key]]));
-  payload.questions.move.instructions = 'Choose the most useful next action category for this city. Grow a balanced settlement: electricity, homes, jobs, roads, and power connections. Do not keep advancing an empty city with no residential zones. Existing empty zones may need jobs, connections, or time rather than more zones. Avoid redundant power plants. Powered flags and demand are stale after construction until advance. geometricPowerConnection predicts existing cardinal connections to a plant; if true, adding more wires is unnecessary unless expanding. After several construction moves, advance to measure actual power and growth before blindly adding more wire. Consider mutationsSinceAdvance, demand, budget, buildings, infrastructure problems, and recent ineffective actions. During survival choose advance while solvent. This question chooses what to do; a separate question selects the exact location.';
+  let keys = [...new Set(Object.values(menu).map(m => m.action ?? m.kind))];
+  const buildings=observation.summary.buildings??[];
+  if(!config.survival && !buildings.some(b=>['coal_power','nuclear_power'].includes(b.type)) && keys.includes('build_coal_power'))keys=keys.filter(k=>['build_coal_power','stop'].includes(k));
+  if(!config.survival && !buildings.some(b=>['residential','commercial','industrial'].includes(b.type)))keys=keys.filter(k=>k!=='advance');
+  const zoneTypes=new Set(buildings.map(b=>b.type));
+  if(!config.survival && zoneTypes.has('residential') && zoneTypes.has('industrial') && !zoneTypes.has('commercial') && keys.includes('zone_commercial'))keys=keys.filter(k=>k==='zone_commercial');
+  const consecutiveAdvances=[...(config.recent??[])].reverse().findIndex(r=>r.move.kind!=='advance');
+  const advanceCount=consecutiveAdvances<0?(config.recent??[]).length:consecutiveAdvances;
+  if(!config.survival && advanceCount>=3 && keys.some(k=>k.startsWith('zone_')))keys=keys.filter(k=>k!=='advance');
+  payload.questions.move.criteria = Object.fromEntries(keys.map(key => [key, {description:descriptions[key], immediateEffects: Object.values(menu).filter(m=>(m.action??m.kind)===key).slice(0,3).map(m=>m.purpose??m.settings??m.kind)}]));
+  payload.questions.move.instructions = 'Choose one immediate action that fixes the largest concrete deficit. A road network is essential: prefer connecting existing zones to the main street before expanding. Follow demandMeaning: when industry is needed and housing is oversupplied, add industrial jobs, not more homes. Do not repeatedly advance while disconnected zones or job shortages block growth. Candidate purposes describe real next-step effects. Choose a street extension to create room for serviced zones when no zone placement is offered. Roads/wires are single tiles and each next tile will be chosen separately. Choose the most useful next action category for this city. Grow a balanced settlement: electricity, homes, jobs, roads, and power connections. Do not keep advancing an empty city with no residential zones. Existing empty zones may need jobs, connections, or time rather than more zones. Avoid redundant power plants. Powered flags and demand are stale after construction until advance. geometricPowerConnection predicts existing cardinal connections to a plant; if true, adding more wires is unnecessary unless expanding. After several construction moves, advance to measure actual power and growth before blindly adding more wire. Consider mutationsSinceAdvance, demand, budget, buildings, infrastructure problems, and recent ineffective actions. During survival choose advance while solvent. This question chooses what to do; a separate question selects the exact location.';
   return payload;
 }

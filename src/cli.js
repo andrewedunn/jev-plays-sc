@@ -7,6 +7,7 @@ import { Recorder } from './record.js';
 
 const { values, positionals } = parseArgs({ options: {
   seed: { type: 'string' }, city: { type: 'string' }, output: { type: 'string' },
+  new: { type: 'boolean' },
   'max-decisions': { type: 'string' }, 'max-months': { type: 'string' }, 'max-minutes': { type: 'string' },
   'max-cost': { type: 'string' }, target: { type: 'string' }, reserve: { type: 'string' },
 }, allowPositionals: true });
@@ -45,7 +46,8 @@ if (command === 'report') {
       const signal = new AbortController();
       process.once('SIGINT', () => signal.abort());
       const dir = resolve(values.output ?? `runs/${new Date().toISOString().replaceAll(':', '-')}`);
-      const result = await run({ game, jev, dir, cityId: (values.city ?? process.env.HS_CITY_ID) || undefined, config, signal: signal.signal });
+      if (values.new && values.city) throw new Error('Use --new or --city, not both');
+      const result = await run({ game, jev, dir, cityId: values.new ? undefined : (values.city ?? process.env.HS_CITY_ID) || undefined, config, signal: signal.signal });
       console.log(`Status: ${result.metrics.status}\nReplay: ${dir}/report.html`);
       if (['error', 'mutation_unconfirmed'].includes(result.metrics.status)) process.exitCode = 1;
     } else throw new Error('Commands: run, doctor, report');
