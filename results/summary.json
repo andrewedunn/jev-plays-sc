@@ -1,0 +1,18 @@
+{
+  "gameplayTurns": 155,
+  "successfulPlacements": 97,
+  "runWallSeconds": 616.171992459,
+  "estimatedInferenceUsd": 0.043435518000000006,
+  "finalPopulation": 480,
+  "peakPopulation": 540,
+  "finalFunds": 14691,
+  "finalAnalysis": {
+    "unpowered_buildings": 0,
+    "unroaded_zones": 8,
+    "largest_empty_area": {
+      "x": 0,
+      "y": 0,
+      "approx_size": "very_large"
+    }
+  }
+}

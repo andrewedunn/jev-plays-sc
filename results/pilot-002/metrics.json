@@ -1,0 +1,110 @@
+{
+  "status": "limit_reached",
+  "decisions": 20,
+  "mutations": 20,
+  "placements": 6,
+  "failures": 0,
+  "gameFundsSpent": 45,
+  "monthsAdvanced": 14,
+  "inputTokens": 242215,
+  "outputTokens": 19014,
+  "usageUnknownRequests": 0,
+  "estimatedInferenceUsd": 0.010173030000000001,
+  "modelLatencyMs": [
+    219.755042,
+    222.17412500000012,
+    196.6418329999999,
+    216.9770840000001,
+    205.58770800000002,
+    210.25662499999999,
+    210.416709000001,
+    191.2584999999999,
+    315.0074170000007,
+    385.4712499999987,
+    269.513291999996,
+    270.92083399999683,
+    337.8554579999982,
+    380.42837500000314,
+    205.0715829999972,
+    202.33004100000107,
+    287.0642499999958,
+    337.4117499999993,
+    351.57012499999837,
+    275.74604199999885,
+    289.95512499999313
+  ],
+  "waitMs": 64169.426413999994,
+  "milestones": [],
+  "development": {
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "source": "Unavailable: import coding-agent usage separately; not included in inference cost."
+  },
+  "finalStats": {
+    "population": 0,
+    "score": 500,
+    "funds": 16955,
+    "cityTime": 56,
+    "year": 1901,
+    "month": 2,
+    "classification": "Village",
+    "isPowered": true,
+    "demand": {
+      "residential": 2000,
+      "commercial": -1500,
+      "industrial": 1500
+    },
+    "census": {
+      "resPop": 0,
+      "comPop": 0,
+      "indPop": 0,
+      "roadTotal": 3,
+      "railTotal": 0,
+      "poweredZoneCount": 1,
+      "unpoweredZoneCount": 0,
+      "policeStationPop": 0,
+      "fireStationPop": 0,
+      "coalPowerPop": 1,
+      "nuclearPowerPop": 0,
+      "seaportPop": 0,
+      "airportPop": 0,
+      "stadiumPop": 0,
+      "crimeAverage": 90,
+      "pollutionAverage": 67,
+      "landValueAverage": 37
+    },
+    "evaluation": {
+      "approval": 50,
+      "populationDelta": 0,
+      "assessedValue": 0,
+      "scoreDelta": 0,
+      "problems": []
+    },
+    "budget": {
+      "taxRate": 7,
+      "cashFlow": 0,
+      "roadPercent": 100,
+      "firePercent": 100,
+      "policePercent": 100,
+      "roadEffect": 32,
+      "fireEffect": 1000,
+      "policeEffect": 1000,
+      "roadMaintenanceBudget": 2,
+      "fireMaintenanceBudget": 0,
+      "policeMaintenanceBudget": 0
+    }
+  },
+  "finalAnalysis": {
+    "unpowered_buildings": 0,
+    "unroaded_zones": 0,
+    "largest_empty_area": {
+      "x": 0,
+      "y": 0,
+      "approx_size": "very_large"
+    }
+  },
+  "elapsedMs": 95446.147792,
+  "survivalMonths": null,
+  "finishedAt": "2026-10-05T00:25:40.350Z"
+}

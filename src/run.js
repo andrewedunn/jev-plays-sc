@@ -164,6 +164,7 @@ function account(response, metrics, settings) {
     throw new Error('Invalid token usage; cost accounting cannot continue');
   }
   metrics.inputTokens += usage.input_tokens;
+  metrics.modelRequests = (metrics.modelRequests ?? 0) + 1;
   metrics.outputTokens += usage.output_tokens;
   metrics.estimatedInferenceUsd = metrics.inputTokens / 1e6 * settings.pricePerMillion;
   metrics.modelLatencyMs.push(response.latencyMs);

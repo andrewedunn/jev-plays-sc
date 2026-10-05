@@ -1,0 +1,93 @@
+{
+  "status": "mutation_unconfirmed",
+  "decisions": 2,
+  "mutations": 1,
+  "placements": 1,
+  "failures": 0,
+  "gameFundsSpent": 3000,
+  "monthsAdvanced": 0,
+  "inputTokens": 23813,
+  "outputTokens": 1927,
+  "usageUnknownRequests": 0,
+  "estimatedInferenceUsd": 0.0010001460000000002,
+  "modelLatencyMs": [
+    282.063125,
+    243.9762499999997,
+    218.90487500000017
+  ],
+  "waitMs": 1243.846584,
+  "milestones": [],
+  "development": {
+    "inputTokens": null,
+    "outputTokens": null,
+    "costUsd": null,
+    "source": "Unavailable: import coding-agent usage separately; not included in inference cost."
+  },
+  "finalStats": {
+    "population": 0,
+    "score": 500,
+    "funds": 17000,
+    "cityTime": 0,
+    "year": 1900,
+    "month": 0,
+    "classification": "Village",
+    "isPowered": false,
+    "demand": {
+      "residential": 0,
+      "commercial": 0,
+      "industrial": 0
+    },
+    "census": {
+      "resPop": 0,
+      "comPop": 0,
+      "indPop": 0,
+      "roadTotal": 0,
+      "railTotal": 0,
+      "poweredZoneCount": 0,
+      "unpoweredZoneCount": 0,
+      "policeStationPop": 0,
+      "fireStationPop": 0,
+      "coalPowerPop": 0,
+      "nuclearPowerPop": 0,
+      "seaportPop": 0,
+      "airportPop": 0,
+      "stadiumPop": 0,
+      "crimeAverage": 0,
+      "pollutionAverage": 0,
+      "landValueAverage": 0
+    },
+    "evaluation": {
+      "approval": 0,
+      "populationDelta": 0,
+      "assessedValue": 0,
+      "scoreDelta": 0,
+      "problems": []
+    },
+    "budget": {
+      "taxRate": 7,
+      "cashFlow": 0,
+      "roadPercent": 100,
+      "firePercent": 100,
+      "policePercent": 100,
+      "roadEffect": 32,
+      "fireEffect": 1000,
+      "policeEffect": 1000,
+      "roadMaintenanceBudget": 0,
+      "fireMaintenanceBudget": 0,
+      "policeMaintenanceBudget": 0
+    }
+  },
+  "finalAnalysis": {
+    "unpowered_buildings": 1,
+    "unroaded_zones": 1,
+    "largest_empty_area": {
+      "x": 0,
+      "y": 0,
+      "approx_size": "very_large"
+    }
+  },
+  "elapsedMs": 7821.774167,
+  "error": "Request or runner failed; see status and reconciliation logs.",
+  "survivalMonths": null,
+  "finishedAt": "2026-10-05T00:23:02.333Z"
+}

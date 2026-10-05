@@ -13,7 +13,7 @@ Requires Node.js 22 or newer. No dependencies to install.
 
 To continue the same city, use npm start -- --city city_YOUR_ID. Each invocation without --city or HS_CITY_ID creates exactly one new city after Jev preflight succeeds. Never rerun a failed city creation blindly: inspect your city list first. An ambiguous gameplay mutation stops the run and attempts reconciliation; it is never automatically retried.
 
-Ctrl-C saves the partial report after the current in-flight request completes. Run folders are immutable: choose a new --output path for every run.
+Ctrl-C saves the partial report after the current in-flight request completes. Gameplay logs are append-only and existing run folders cannot be reused: choose a new --output path for every run. Reports and separate accounting snapshots can be rebuilt afterward.
 
 ## Rules and challenge
 
@@ -51,3 +51,7 @@ npm test runs integration and safety checks with controlled fixtures; it does no
 - test/runner.test.js: meaningful failure-path and accounting checks
 
 Built as an API client; no Micropolis engine code is bundled.
+
+## Publish run evidence
+
+After a run finishes, node --env-file=.env src/publish-run.js runs/RUN_ID results/RUN_ID exports an allowlist of game evidence and scans it for both exact API keys. The private session transcript, .env, and redundant snapshot files are excluded. Review the export, then commit it.

@@ -1,0 +1,1 @@
+{"sequence":13,"timestamp":"2026-10-05T00:23:01.679Z","elapsedMs":7168.410334,"decisionId":"d2","serverActions":{"actions":[{"id":412347,"game_year":1900,"action_type":"build_coal_power","params":{"x":60,"y":47,"auto_bulldoze":false,"auto_power":false,"auto_road":false},"result":"success","cost":3000,"created_at":"2026-10-05 00:22:58"}],"total":1}}
