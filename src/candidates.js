@@ -94,7 +94,7 @@ export function decisionPayload(observation, menu, { targetPopulation, reserve, 
     state: {
       goal: { targetPopulation, reserve, survival },
       stats: observation.stats,
-      buildings: observation.summary.buildings,
+      buildings: connectivityFacts(observation),
       infrastructure: observation.summary.infrastructure,
       analysis: observation.summary.analysis,
       recent,
@@ -107,6 +107,39 @@ export function decisionPayload(observation, menu, { targetPopulation, reserve, 
       criteria: menu,
     } },
   };
+}
+
+// Geometry evidence only: reachability is computed, strategy and placements remain Jev choices.
+export function connectivityFacts({ map, summary }) {
+  const buildings = summary.buildings ?? [], conductive = new Set(), seeds = [];
+  map.tiles.forEach((t, i) => { if (wireTile(tileId(t))) conductive.add(i); });
+  const footprint = building => {
+    const size = ['coal_power', 'nuclear_power', 'seaport', 'stadium'].includes(building.type) ? 4 : building.type === 'airport' ? 6 : 3;
+    const cells = [];
+    for (let dy = -1; dy < size - 1; dy++) for (let dx = -1; dx < size - 1; dx++) {
+      const x = building.x + dx, y = building.y + dy;
+      if (x >= 0 && x < map.width && y >= 0 && y < map.height) cells.push(y * map.width + x);
+    }
+    return cells;
+  };
+  for (const b of buildings) for (const i of footprint(b)) {
+    conductive.add(i);
+    if (['coal_power', 'nuclear_power'].includes(b.type)) seeds.push(i);
+  }
+  const reached = new Set(seeds), stack = [...seeds];
+  while (stack.length) {
+    const i = stack.pop(), x = i % map.width, y = Math.floor(i / map.width);
+    const adjacent = [x > 0 ? i - 1 : -1, x + 1 < map.width ? i + 1 : -1, y > 0 ? i - map.width : -1, y + 1 < map.height ? i + map.width : -1];
+    for (const next of adjacent) if (conductive.has(next) && !reached.has(next)) { reached.add(next); stack.push(next); }
+  }
+  return buildings.map(b => {
+    let roadNearby = false;
+    for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+      const x = b.x + dx, y = b.y + dy;
+      if (x >= 0 && x < map.width && y >= 0 && y < map.height && roadTile(tileId(map.tiles[y * map.width + x]))) roadNearby = true;
+    }
+    return { ...b, geometricPowerConnection: footprint(b).some(i => reached.has(i)), roadNearby, evidenceNote: 'Geometry prediction; simulation powered flag and API road summary remain authoritative.' };
+  });
 }
 
 export function categoryPayload(observation, menu, config) {
@@ -128,6 +161,6 @@ export function categoryPayload(observation, menu, config) {
   };
   const keys = [...new Set(Object.values(menu).map(m => m.action ?? m.kind))];
   payload.questions.move.criteria = Object.fromEntries(keys.map(key => [key, descriptions[key]]));
-  payload.questions.move.instructions = 'Choose the most useful next action category for this city. Grow a balanced settlement: electricity, homes, jobs, roads, and power connections. Do not keep advancing an empty city with no residential zones. Existing empty zones may need jobs, connections, or time rather than more zones. Avoid redundant power plants. Powered flags and demand are stale after construction until advance. After several construction moves, advance to measure actual power and growth before blindly adding more wire. Consider mutationsSinceAdvance, demand, budget, buildings, infrastructure problems, and recent ineffective actions. During survival choose advance while solvent. This question chooses what to do; a separate question selects the exact location.';
+  payload.questions.move.instructions = 'Choose the most useful next action category for this city. Grow a balanced settlement: electricity, homes, jobs, roads, and power connections. Do not keep advancing an empty city with no residential zones. Existing empty zones may need jobs, connections, or time rather than more zones. Avoid redundant power plants. Powered flags and demand are stale after construction until advance. geometricPowerConnection predicts existing cardinal connections to a plant; if true, adding more wires is unnecessary unless expanding. After several construction moves, advance to measure actual power and growth before blindly adding more wire. Consider mutationsSinceAdvance, demand, budget, buildings, infrastructure problems, and recent ineffective actions. During survival choose advance while solvent. This question chooses what to do; a separate question selects the exact location.';
   return payload;
 }

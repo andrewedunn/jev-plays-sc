@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { GameClient } from '../src/http.js';
-import { candidates, validPlacement } from '../src/candidates.js';
+import { candidates, validPlacement, connectivityFacts } from '../src/candidates.js';
 import { run, qualifies, validateAnswer } from '../src/run.js';
 
 export function fixture() {
@@ -96,4 +96,13 @@ test('preflight hitting inference cap does not create a city', async () => {
   const jev = { model: 'test', decide: async () => answer('probe') };
   const { metrics } = await run({ game, jev, dir: directory(), config: { maxInferenceUsd: 0.000001 } });
   assert.equal(calls, 0); assert.equal(metrics.status, 'limit_reached');
+});
+
+test('connection evidence requires cardinal conductor adjacency, not roads alone', () => {
+  const obs = fixture();
+  obs.summary.buildings = [{ type: 'coal_power', x: 4, y: 5 }, { type: 'residential', x: 9, y: 5 }];
+  obs.map.tiles[5 * 16 + 7] = 66;
+  assert.equal(connectivityFacts(obs)[1].geometricPowerConnection, false);
+  obs.map.tiles[5 * 16 + 7] = 210;
+  assert.equal(connectivityFacts(obs)[1].geometricPowerConnection, true);
 });

@@ -7,7 +7,8 @@ if (!sessionPath || !outputPath) throw new Error('Usage: node src/development.js
 let previous = null, baseline = null, latest = null, found = false, timestamp;
 for (const line of readFileSync(sessionPath, 'utf8').split('\n').filter(Boolean)) {
   const event = JSON.parse(line), p = event.payload;
-  if (event.type === 'event_msg' && p?.type === 'user_message' && p.message?.trim() === startMessage) { baseline = previous; found = true; }
+  const userText = event.type === 'response_item' && p?.role === 'user' ? (p.content ?? []).map(c => c.text ?? '').join('') : event.type === 'event_msg' && p?.type === 'user_message' ? p.message : null;
+  if (userText?.trim() === startMessage) { baseline = previous; found = true; }
   if (event.type === 'event_msg' && p?.type === 'token_count' && p.info?.total_token_usage) {
     previous = p.info.total_token_usage;
     if (found) { latest = previous; timestamp = event.timestamp; }
